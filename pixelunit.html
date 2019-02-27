@@ -1,0 +1,181 @@
+<html>
+  <head>
+    <title>Pixel Unit</title>
+    <style>
+      #sz-label {
+        position: absolute;
+        top: 5;
+        left: 30;
+      }
+      #sz {
+        position: absolute;
+        top: 5;
+        left: 170;
+      }
+      #doset {
+        position: absolute;
+        top: 8;
+        left: 340;
+      }
+      #unit-cell {
+        background-color: #c0c0c0;
+        position: relative;
+        margin-left: 10px;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <label id="sz-label" for="sz"> size: </label> <input type="number" id="sz" name="sz" required minlength="1" maxlength="3" size="3">
+    <button id="doset">reset</button>
+    <canvas id="unit-cell" width="800" height="800"></canvas>
+    <div>Pixel string: <div id="pixel-string"></div></div>
+    <script>
+      let psv = [] // 16 floats
+      let sh = [] // 16 floats
+      let c = document.getElementById('unit-cell')
+      let ctx = c.getContext('2d')
+      ctx.fillStyle = 'rgb(192,192,192)'
+      ctx.fillRect(0, 0, c.width, c.height)
+      let lw = 4 // line width
+      const szInput = document.getElementById('sz')
+      const doset = document.getElementById('doset')
+      let size = 10
+      let p = 0
+      let borderColor = 'black'
+      let setColor = 'red'
+      let resetColor = '#c0c0c0'
+      let pixels = resetPixels(size)
+      szInput.value = ''+size
+      let pixelString = ''
+      const pixelStrElem = document.getElementById('pixel-string')
+      // c.addEventListener('mousemove', (ev) => {
+      //     let pixel = pt2pixel(c.width, c.height, size, ev.layerX, ev.layerY)
+      //     console.log('x: ' + ev.layerX + ' y: ' + ev.layerY + ' pixel: ' + JSON.stringify(pixel))
+      // })
+      c.addEventListener('click', ev => {
+          let pixel = pt2pixel(c.width, c.height, size, ev.layerX, ev.layerY)
+          console.log('clicked x: ' + pixel.x + ' y: ' + pixel.y)
+          console.log(' pixels[' + pixel.x + '][' + pixel.y + '] was: ' + ' ' + pixels[pixel.x][pixel.y])
+          if(pixels[pixel.x][pixel.y]) {
+              resetSymmetric(pixel, size)
+          } else {
+              setSymmetric(pixel, size)
+          }
+          console.log(' pixels[' + pixel.x + '][' + pixel.y + '] now: ' + ' ' + pixels[pixel.x][pixel.y])
+      })
+      doset.addEventListener('click', () => {
+        size = parseInt(szInput.value)
+        console.log('size change: ' + size + ' ' + ' canvas width: ' + c.width + ' height: ' + c.height)
+        clear(c)
+        drawGrid(lw, c.width, c.height, size, p)
+        pixels = resetPixels(size)
+        showPixelString()
+      })
+      function pt2pixel (w, h, vxsz, pointerX, pointerY) {
+          let vxw = Math.floor(w / vxsz)
+          let vxh = Math.floor(h / vxsz)
+          let x = Math.floor(pointerX / vxw)
+          let y = Math.floor(pointerY / vxh)
+          return {'x':x, 'y': y}
+      }
+      function pixelRect(pos, lw, sz, w, h) {
+          let x = pos.x
+          let y = pos.y
+          let x1 = Math.floor(x*w/size)+lw/2
+          let y1 = Math.floor(y*w/size)+lw/2
+          let sx = Math.floor(w/size)-lw
+          let sy = Math.floor(h/size)-lw
+          console.log('x: ' + x1 + ' y: ' + y1 + ' sx: ' + sx + ' sy: ' + sy)
+          return {'x': x1, 'y': y1, 'sx': sx, 'sy': sy}
+      }
+      function getSymmetric(pos, sz) {
+          let pos1 = {}
+          let pos2 = {}
+          let pos3 = {}
+          pos1.x = (sz - 1) - pos.x
+          pos1.y = pos.y
+
+          pos2.x = pos.x
+          pos2.y = (sz - 1) - pos.y
+
+          pos3.x = (sz - 1) - pos.x
+          pos3.y = (sz - 1) - pos.y
+          return [pos, pos1, pos2, pos3]
+      }
+      function resetSymmetric(pos, sz) {
+          let a = getSymmetric(pos, sz)
+          a.forEach(function (v) {
+              resetPixel(v)
+          })
+      }
+      function setSymmetric(pos, sz) {
+          let a = getSymmetric(pos, sz)
+          a.forEach(function (v) {
+              setPixel(v)
+          })
+      }
+      function setPixel (pos) {
+          let vr = pixelRect(pos, lw, size, c.width, c.height)
+          let x = pos.x
+          let y = pos.y
+          pixels[x][y] = 1
+          ctx.fillStyle = 'rgb(255, 0, 0)'
+          ctx.fillRect(vr.x, vr.y, vr.sx, vr.sy)
+          showPixelString()
+      }
+      function resetPixel (pos) {
+          let vr = pixelRect(pos, lw, size, c.width, c.height)
+          let x = pos.x
+          let y = pos.y
+          pixels[x][y] = 0
+          ctx.fillStyle = 'rgb(192, 192, 192)'
+          ctx.fillRect(vr.x, vr.y, vr.sx, vr.sy)
+          showPixelString()
+      }
+
+      function resetPixels(size) {
+          let rv = []
+          for(let x = 0; x < size; ++x) {
+              let yvals = []
+              rv [x] = yvals
+              for( let y = 0; y < size; ++y) {
+                  rv[x][y] = 0
+              }
+          }
+          // console.log('pixels length: ' + rv.length)
+          return rv
+      }
+      function showPixelString() {
+        let vs = ''
+        for(let x = 0; x < size; ++x) {
+            for (let y = 0; y < size; ++y) {
+                vs += (''+ pixels[x][y])
+            }
+        }
+        pixelStrElem.innerText = vs
+      }
+      function clear(canvas) {
+          let ctx = canvas.getContext('2d')
+          ctx.clearRect(0, 0, canvas.width, canvas.height)
+          ctx.beginPath()
+      }
+      function drawGrid(lw, bw, bh, size, p){
+        for (let x = 0; x <= bw; x += bw/size) {
+          ctx.moveTo(0.5 + x + p, p)
+          ctx.lineTo(0.5 + x + p, bh + p)
+        }
+        for (let x = 0; x <= bh; x += bh/size) {
+          ctx.moveTo(p, 0.5 + x + p)
+          ctx.lineTo(bw + p, 0.5 + x + p)
+        }
+        ctx.lineWidth = lw
+        ctx.strokeStyle = borderColor
+        ctx.stroke()
+      }
+      drawGrid(lw, c.width, c.height, parseInt(size), p)
+    </script>
+  </body>
+</html>
+
+    
