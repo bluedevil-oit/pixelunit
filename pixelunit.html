@@ -123,7 +123,7 @@
           let x = pos.x
           let y = pos.y
           pixels[x][y] = 1
-          ctx.fillStyle = 'rgb(255, 0, 0)'
+          ctx.fillStyle = setColor
           ctx.fillRect(vr.x, vr.y, vr.sx, vr.sy)
           showPixelString()
       }
@@ -132,7 +132,7 @@
           let x = pos.x
           let y = pos.y
           pixels[x][y] = 0
-          ctx.fillStyle = 'rgb(192, 192, 192)'
+          ctx.fillStyle = resetColor
           ctx.fillRect(vr.x, vr.y, vr.sx, vr.sy)
           showPixelString()
       }
