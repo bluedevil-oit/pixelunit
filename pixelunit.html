@@ -33,26 +33,29 @@
     <script>
       let psv = [] // 16 floats
       let sh = [] // 16 floats
+      let borderColor = 'black'
+      let setColor = 'red'
+      let resetColor = '#c0c0c0'
+      let bgColor = 'rgb(192,192,192)'
       let c = document.getElementById('unit-cell')
       let ctx = c.getContext('2d')
-      ctx.fillStyle = 'rgb(192,192,192)'
+      ctx.fillStyle = bgColor
       ctx.fillRect(0, 0, c.width, c.height)
       let lw = 4 // line width
       const szInput = document.getElementById('sz')
       const doset = document.getElementById('doset')
-      let size = 10
+      let size = 10 // default to 10x10 matrix
       let p = 0
-      let borderColor = 'black'
-      let setColor = 'red'
-      let resetColor = '#c0c0c0'
       let pixels = resetPixels(size)
       szInput.value = ''+size
       let pixelString = ''
       const pixelStrElem = document.getElementById('pixel-string')
+
       // c.addEventListener('mousemove', (ev) => {
       //     let pixel = pt2pixel(c.width, c.height, size, ev.layerX, ev.layerY)
       //     console.log('x: ' + ev.layerX + ' y: ' + ev.layerY + ' pixel: ' + JSON.stringify(pixel))
       // })
+
       c.addEventListener('click', ev => {
           let pixel = pt2pixel(c.width, c.height, size, ev.layerX, ev.layerY)
           console.log('clicked x: ' + pixel.x + ' y: ' + pixel.y)
